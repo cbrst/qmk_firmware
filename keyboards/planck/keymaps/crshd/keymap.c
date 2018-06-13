@@ -20,8 +20,9 @@
 extern keymap_config_t keymap_config;
 
 enum planck_layers {
-  _QWERTY,
   _MAC,
+  _WIN,
+  _UML,
   _NUMPAD,
   _LOWER,
   _RAISE,
@@ -29,10 +30,14 @@ enum planck_layers {
 };
 
 enum planck_keycodes {
-  QWERTY = SAFE_RANGE,
-  MAC,
+  MAC = SAFE_RANGE,
+  WIN,
   BACKLIT,
-  EXT_PLV
+  EXT_PLV,
+  UMLAUT_A,
+  UMLAUT_O,
+  UMLAUT_U,
+  UMLAUT_S
 };
 
 #define LOWER MO(_LOWER)
@@ -40,34 +45,109 @@ enum planck_keycodes {
 #define CTLSC LCTL_T(KC_ESC)
 #define SHENTER RSFT_T(KC_ENT)
 #define OSHYPR OSM(KC_HYPR)
+#define UML MO(_UML)
 #define NUMPAD MO(_NUMPAD)
+#define MODS_SHIFT_MASK (MOD_BIT(KC_LSFT)|MOD_BIT(KC_RSFT))
+
+bool g_NumLockOn = false;
+
+void send_altcode(uint16_t mask, keyrecord_t *record) {
+  static uint8_t lalt_mask;
+  lalt_mask = keyboard_report->mods & KC_LALT;
+
+  bool bNumLockWasOn = g_NumLockOn;
+
+  static uint16_t kp[4];
+
+  kp[0] = mask / 1000;
+  kp[1] = mask / 100 - kp[0] * 100;
+  kp[2] = mask / 10 - kp[0] * 1000 - kp[1] * 10;
+  kp[3] = mask - kp[0] * 1000 - kp[1] * 100 - kp[2] * 10;
+
+  for (uint8_t i=0; i<=3; i++) {
+    switch(kp[i]) {
+      case 0:
+        kp[i] = KC_KP_0; break;
+      case 1:
+        kp[i] = KC_KP_1; break;
+      case 2:
+        kp[i] = KC_KP_2; break;
+      case 3:
+        kp[i] = KC_KP_3; break;
+      case 4:
+        kp[i] = KC_KP_4; break;
+      case 5:
+        kp[i] = KC_KP_5; break;
+      case 6:
+        kp[i] = KC_KP_6; break;
+      case 7:
+        kp[i] = KC_KP_7; break;
+      case 8:
+        kp[i] = KC_KP_8; break;
+      case 9:
+        kp[i] = KC_KP_9; break;
+    }
+  }
+
+  if (!lalt_mask) {
+    register_code(KC_LALT);
+    send_keyboard_report();
+  }
+
+  if (!bNumLockWasOn) {
+    register_code(KC_LNUM);
+    send_keyboard_report();
+  }
+
+  add_key(kp[0]);
+  send_keyboard_report();
+  del_key(kp[0]);
+  send_keyboard_report();
+  add_key(kp[1]);
+  send_keyboard_report();
+  del_key(kp[1]);
+  send_keyboard_report();
+  add_key(kp[2]);
+  send_keyboard_report();
+  del_key(kp[2]);
+  send_keyboard_report();
+  add_key(kp[3]);
+  send_keyboard_report();
+  del_key(kp[3]);
+  send_keyboard_report();
+
+  if (!lalt_mask) {
+    unregister_code(KC_LALT);
+  }
+
+  send_keyboard_report();
+
+  if (!bNumLockWasOn) {
+    unregister_code(KC_LNUM);
+    send_keyboard_report();
+  }
+}
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-
-/* Qwerty
- * ,-----------------------------------------------------------------------------------.
- * | Tab  |   Q  |   W  |   E  |   R  |   T  |   Y  |   U  |   I  |   O  |   P  | Bksp |
- * |------+------+------+------+------+-------------+------+------+------+------+------|
- * | Esc  |   A  |   S  |   D  |   F  |   G  |   H  |   J  |   K  |   L  |   ;  |  "   |
- * |------+------+------+------+------+------|------+------+------+------+------+------|
- * | Shift|   Z  |   X  |   C  |   V  |   B  |   N  |   M  |   ,  |   .  |   /  |Enter |
- * |------+------+------+------+------+------+------+------+------+------+------+------|
- * | Brite| Ctrl | Alt  | GUI  |Lower |    Space    |Raise | Left | Down |  Up  |Right |
- * `-----------------------------------------------------------------------------------'
- */
-
-[_QWERTY] = {
-  {KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,  KC_T,   KC_Y,   KC_U,  KC_I,    KC_O,    KC_P,    KC_BSPC},
-  {CTLSC,   KC_A,    KC_S,    KC_D,    KC_F,  KC_G,   KC_H,   KC_J,  KC_K,    KC_L,    KC_SCLN, KC_QUOT},
-  {KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,  KC_B,   KC_N,   KC_M,  KC_COMM, KC_DOT,  KC_SLSH, KC_ENT },
-  {BACKLIT, KC_LCTL, KC_LALT, KC_LGUI, LOWER, KC_SPC, KC_SPC, RAISE, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT}
+[_MAC] = {
+  {KC_TAB,  KC_Q,    KC_W,   KC_E,    KC_R,  KC_T,    KC_Y,   KC_U,  KC_I,    KC_O,    KC_P,    KC_BSPC},
+  {CTLSC,   KC_A,    KC_S,   KC_D,    KC_F,  KC_G,    KC_H,   KC_J,  KC_K,    KC_L,    KC_SCLN, KC_QUOT},
+  {KC_LSFT, KC_Z,    KC_X,   KC_C,    KC_V,  KC_B,    KC_N,   KC_M,  KC_COMM, KC_DOT,  KC_SLSH, SHENTER},
+  {OSHYPR,  KC_LCTL, NUMPAD, KC_LALT, LOWER, KC_LGUI, KC_SPC, RAISE, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT}
 },
 
-[_MAC] = {
-  {KC_TAB,  KC_Q,    KC_W,   KC_E,    KC_R,  KC_T,    KC_Y,   KC_U,   KC_I,    KC_O,    KC_P,    KC_BSPC},
-  {CTLSC,   KC_A,    KC_S,   KC_D,    KC_F,  KC_G,    KC_H,   KC_J,   KC_K,    KC_L,    KC_SCLN, KC_QUOT},
-  {KC_LSFT, KC_Z,    KC_X,   KC_C,    KC_V,  KC_B,    KC_N,   KC_M,   KC_COMM, KC_DOT,  KC_SLSH, SHENTER},
-  {OSHYPR,  KC_LCTL, NUMPAD, KC_LALT, LOWER, KC_LGUI, KC_SPC, RAISE, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT}
+[_WIN] = {
+  {KC_TAB,  KC_Q, KC_W,   KC_E,    KC_R,  KC_T,    KC_Y,   KC_U,  KC_I,    KC_O,    KC_P,    KC_BSPC},
+  {CTLSC,   KC_A, KC_S,   KC_D,    KC_F,  KC_G,    KC_H,   KC_J,  KC_K,    KC_L,    KC_SCLN, KC_QUOT},
+  {KC_LSFT, KC_Z, KC_X,   KC_C,    KC_V,  KC_B,    KC_N,   KC_M,  KC_COMM, KC_DOT,  KC_SLSH, SHENTER},
+  {OSHYPR,  UML,  NUMPAD, KC_LALT, LOWER, KC_LGUI, KC_SPC, RAISE, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT}
+},
+
+[_UML] = {
+  {_______, _______,  _______,  _______, _______, _______, _______, UMLAUT_U, _______, UMLAUT_O, _______, _______},
+  {_______, UMLAUT_A, UMLAUT_S, _______, _______, _______, _______, _______,  _______, _______,  _______, _______},
+  {_______, _______,  _______,  _______, _______, _______, _______, _______,  _______, _______,  _______, _______},
+  {_______, _______,  _______,  _______, _______, _______, _______, _______,  _______, _______,  _______, _______}
 },
 
 [_NUMPAD] = {
@@ -77,17 +157,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   {_______, _______, _______, _______, _______, _______, _______, KC_KP_0, KC_KP_DOT, KC_KP_EQUAL, KC_KP_SLASH,    _______}
 },
 
-/* Lower
- * ,-----------------------------------------------------------------------------------.
- * |   ~  |   !  |   @  |   #  |   $  |   %  |   ^  |   &  |   *  |   (  |   )  | Bksp |
- * |------+------+------+------+------+-------------+------+------+------+------+------|
- * | Del  |  F1  |  F2  |  F3  |  F4  |  F5  |  F6  |   =  |   +  |   {  |   }  |  |   |
- * |------+------+------+------+------+------|------+------+------+------+------+------|
- * |      |  F7  |  F8  |  F9  |  F10 |  F11 |  F12 |ISO ~ |   -  |   [  |   ]  |      |
- * |------+------+------+------+------+------+------+------+------+------+------+------|
- * |      |      |      |      |      |             |      | Next | Vol- | Vol+ | Play |
- * `-----------------------------------------------------------------------------------'
- */
 [_LOWER] = {
   {KC_TILD, KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC, KC_CIRC, KC_AMPR,    KC_ASTR, KC_LPRN, KC_RPRN, KC_BSPC},
   {KC_DEL,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_EQL,     KC_PLUS, KC_LCBR, KC_RCBR, KC_PIPE},
@@ -95,17 +164,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   {_______, _______, _______, _______, _______, _______, _______, _______,    KC_MNXT, KC_VOLD, KC_VOLU, KC_MPLY}
 },
 
-/* Raise
- * ,-----------------------------------------------------------------------------------.
- * |   `  |   1  |   2  |   3  |   4  |   5  |   6  |   7  |   8  |   9  |   0  | Bksp |
- * |------+------+------+------+------+-------------+------+------+------+------+------|
- * | Del  |  F1  |  F2  |  F3  |  F4  |  F5  |  F6  |   -  |   =  |   [  |   ]  |  \   |
- * |------+------+------+------+------+------|------+------+------+------+------+------|
- * |      |  F7  |  F8  |  F9  |  F10 |  F11 |  F12 |ISO # |ISO / |Pg Up |Pg Dn |      |
- * |------+------+------+------+------+------+------+------+------+------+------+------|
- * |      |      |      |      |      |             |      | Next | Vol- | Vol+ | Play |
- * `-----------------------------------------------------------------------------------'
- */
 [_RAISE] = {
   {KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_BSPC},
   {KC_DEL,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_MINS, KC_EQL,  KC_LBRC, KC_RBRC, KC_BSLS},
@@ -126,7 +184,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  */
 [_ADJUST] = {
   {_______, RESET,   DEBUG,   RGB_TOG, RGB_MOD, RGB_HUI, RGB_HUD, RGB_SAI, RGB_SAD,  RGB_VAI, RGB_VAD, KC_DEL },
-  {_______, _______, MU_MOD,  AU_ON,   AU_OFF,  AG_NORM, AG_SWAP, QWERTY,  MAC,      _______, _______, _______},
+  {_______, _______, MU_MOD,  AU_ON,   AU_OFF,  AG_NORM, AG_SWAP, MAC,     WIN,      _______, _______, _______},
   {_______, MUV_DE,  MUV_IN,  MU_ON,   MU_OFF,  MI_ON,   MI_OFF,  TERM_ON, TERM_OFF, _______, _______, _______},
   {_______, _______, _______, _______, _______, _______, _______, _______, _______,  _______, _______, _______}
 }
@@ -137,35 +195,93 @@ uint32_t layer_state_set_user(uint32_t state) {
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-  switch (keycode) {
-    case QWERTY:
-      if (record->event.pressed) {
-        set_single_persistent_default_layer(_QWERTY);
-      }
-      return false;
-      break;
-    case MAC:
-      if (record->event.pressed) {
-        set_single_persistent_default_layer(_MAC);
-      }
-      return false;
-      break;
-    case BACKLIT:
-      if (record->event.pressed) {
-        register_code(KC_RSFT);
-        #ifdef BACKLIGHT_ENABLE
-          backlight_step();
-        #endif
-        PORTE &= ~(1<<6);
-      } else {
-        unregister_code(KC_RSFT);
-        PORTE |= (1<<6);
-      }
-      return false;
-      break;
+  static uint8_t shift_mask;
+  shift_mask = get_mods()&MODS_SHIFT_MASK;
+
+  if (record->event.pressed) {
+    switch(keycode) {
+      case MAC:
+        if (record->event.pressed) {
+          set_single_persistent_default_layer(_MAC);
+        }
+        return false;
+        break;
+      case WIN:
+        if (record->event.pressed) {
+          set_single_persistent_default_layer(_WIN);
+        }
+        return false;
+        break;
+      case BACKLIT:
+        if (record->event.pressed) {
+          register_code(KC_RSFT);
+          #ifdef BACKLIGHT_ENABLE
+            backlight_step();
+          #endif
+          PORTE &= ~(1<<6);
+        } else {
+          unregister_code(KC_RSFT);
+          PORTE |= (1<<6);
+        }
+        return false;
+        break;
+      case UMLAUT_A:
+        if (shift_mask) {
+          unregister_code(KC_LSFT);
+          unregister_code(KC_RSFT);
+          send_keyboard_report();
+
+          send_altcode(196, record);
+
+          if (shift_mask &MOD_BIT(KC_LSFT)) register_code(KC_LSFT);
+          if (shift_mask &MOD_BIT(KC_RSFT)) register_code(KC_RSFT);
+
+          send_keyboard_report();
+        } else {
+          send_altcode(228, record);
+        }
+        return false; break;
+      case UMLAUT_O:
+        if (shift_mask) {
+          unregister_code(KC_LSFT);
+          unregister_code(KC_RSFT);
+          send_keyboard_report();
+
+          send_altcode(214, record);
+
+          if (shift_mask &MOD_BIT(KC_LSFT)) register_code(KC_LSFT);
+          if (shift_mask &MOD_BIT(KC_RSFT)) register_code(KC_RSFT);
+
+          send_keyboard_report();
+        } else {
+          send_altcode(246, record);
+        }
+        return false; break;
+      case UMLAUT_U:
+        if (shift_mask) {
+          unregister_code(KC_LSFT);
+          unregister_code(KC_RSFT);
+          send_keyboard_report();
+
+          send_altcode(220, record);
+
+          if (shift_mask &MOD_BIT(KC_LSFT)) register_code(KC_LSFT);
+          if (shift_mask &MOD_BIT(KC_RSFT)) register_code(KC_RSFT);
+
+          send_keyboard_report();
+        } else {
+          send_altcode(252, record);
+        }
+        return false; break;
+      case UMLAUT_S:
+        send_altcode(223, record);
+        return false; break;
+    }
   }
+
   return true;
 }
+
 
 bool music_mask_user(uint16_t keycode) {
   switch (keycode) {
