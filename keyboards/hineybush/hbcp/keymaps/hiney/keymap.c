@@ -42,9 +42,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
   [1] = LAYOUT_wkl(
-    KC_TRNS,  KC_TRNS, KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS, KC_TRNS,  KC_TRNS, KC_TRNS,           KC_PSCR, KC_SLCK,KC_HOME, KC_END,
+    KC_TRNS,  KC_TRNS, KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS, KC_TRNS,  KC_TRNS, KC_TRNS,           KC_PSCR, KC_SCRL,KC_HOME, KC_END,
     KC_TRNS,  KC_TRNS, KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS, KC_TRNS,  KC_TRNS, KC_TRNS, KC_TRNS,  RGB_HUD, RGB_HUI,KC_TRNS, KC_TRNS,
-    KC_TRNS,  KC_TRNS, KC_TRNS,KC_TRNS, RESET ,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS, KC_TRNS,  KC_TRNS, KC_TRNS, KC_TRNS,  RGB_SAD, RGB_SAI,KC_TRNS, KC_TRNS,
+    KC_TRNS,  KC_TRNS, KC_TRNS,KC_TRNS, QK_BOOT ,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS, KC_TRNS,  KC_TRNS, KC_TRNS, KC_TRNS,  RGB_SAD, RGB_SAI,KC_TRNS, KC_TRNS,
     KC_CAPS,  KC_TRNS, KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS, KC_TRNS,  KC_TRNS,          KC_TRNS,  RGB_VAD, RGB_VAI,KC_TRNS, KC_TRNS,
     KC_TRNS,           KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS,KC_TRNS, KC_TRNS,  KC_TRNS, KC_TRNS, KC_VOLU,  RGB_TOG, RGB_MOD,KC_TRNS,
     KC_TRNS,  KC_TRNS,                         KC_MPLY,                                 KC_TRNS,  KC_TRNS, KC_MPRV, KC_VOLD,  KC_MNXT, KC_TRNS,KC_TRNS, KC_TRNS
@@ -86,17 +86,17 @@ void matrix_scan_user(void) {
 // The first three LEDs are used as indicators for CAPS_LOCK, NUM_LOCK and SCROLL_LOCK.
 void led_set_user(uint8_t usb_led) {
     if (IS_LED_ON(usb_led, USB_LED_CAPS_LOCK)) {
-        sethsv_raw(HSV_SOFT_PINK, (LED_TYPE *)&led[0]);
+        sethsv_raw(HSV_SOFT_RED, (LED_TYPE *)&led[0]);
     } else {
         sethsv(HSV_BLACK, (LED_TYPE *)&led[0]);
     }
     if (IS_LED_ON(usb_led, USB_LED_NUM_LOCK)) {
-        sethsv_raw(HSV_SOFT_PINK, (LED_TYPE *)&led[1]);
+        sethsv_raw(HSV_WARM_WHITE, (LED_TYPE *)&led[1]);
     } else {
         sethsv(HSV_BLACK, (LED_TYPE *)&led[1]);
     }
     if (IS_LED_ON(usb_led, USB_LED_SCROLL_LOCK)) {
-        sethsv_raw(HSV_SOFT_PINK, (LED_TYPE *)&led[2]);
+        sethsv_raw(HSV_SOFT_BLUE, (LED_TYPE *)&led[2]);
     } else {
         sethsv(HSV_BLACK, (LED_TYPE *)&led[2]);
     }
